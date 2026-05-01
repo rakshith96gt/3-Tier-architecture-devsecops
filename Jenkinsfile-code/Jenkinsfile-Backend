@@ -7,7 +7,7 @@ pipeline {
     environment  {
         SCANNER_HOME=tool 'sonar-scanner'
         AWS_ACCOUNT_ID = credentials('ACCOUNT_ID')
-        AWS_ECR_REPO_NAME = credentials('ECR_REPO2')
+        AWS_ECR_REPO_NAME = credentials('ECR-REPO2')
         AWS_DEFAULT_REGION = 'ap-south-2'
         REPOSITORY_URI = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/"
     }
@@ -19,7 +19,9 @@ pipeline {
         }
         stage('Checkout from Git') {
             steps {
-                git credentialsId: 'GITHUB', url: 'https://github.com/rakshith96gt/3-Tier-architecture-devsecops.git'
+                git branch: 'main',
+                      credentialsId: 'github-cred',
+                      url: 'https://github.com/rakshith96gt/3-Tier-architecture-devsecops.git'
             }
         }
         stage('Sonarqube Analysis') {
@@ -82,7 +84,9 @@ pipeline {
         }
         stage('Checkout Code') {
             steps {
-                git credentialsId: 'GITHUB', url: 'https://github.com/rakshith96gt/3-Tier-architecture-devsecops.git'
+              git branch: 'main',
+                    credentialsId: 'github-cred',
+                     url: 'https://github.com/rakshith96gt/3-Tier-architecture-devsecops.git'
             }
         }
         stage('Update Deployment file') {
@@ -92,7 +96,7 @@ pipeline {
             }
             steps {
                 dir('Kubernetes-Manifests-file/Backend') {
-                    withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
+                    withCredentials([string(credentialsId: 'github', variable: 'github-cred')]) {
                         sh '''
                             git config user.email "rakshith96gt@gmail.com"
                             git config user.name "rakshith96gt"
