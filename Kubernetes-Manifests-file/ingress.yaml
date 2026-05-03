@@ -11,7 +11,7 @@ metadata:
 spec:
   ingressClassName: alb
   rules:
-    - host: raga17.shop
+    - host: k8s-threetie-mainlb-1dd958d0ec-1304398576.ap-south-2.elb.amazonaws.com
       http:
         paths:
           - path: /api
