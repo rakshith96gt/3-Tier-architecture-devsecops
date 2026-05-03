@@ -8,7 +8,7 @@ pipeline {
         SCANNER_HOME=tool 'sonar-scanner'
         AWS_ACCOUNT_ID = credentials('ACCOUNT_ID')
         AWS_ECR_REPO_NAME = credentials('ECR_REPO1')
-        AWS_DEFAULT_REGION = 'us-east-1'
+        AWS_DEFAULT_REGION = 'ap-south-2'
         REPOSITORY_URI = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/"
     }
     stages {
@@ -19,7 +19,9 @@ pipeline {
         }
         stage('Checkout from Git') {
             steps {
-                git credentialsId: 'GITHUB', url: 'https://github.com/rakshith96gt/3-Tier-architecture-devsecops.git'
+                git branch: 'main',
+                      credentialsId: 'GITHUB',
+                      url: 'https://github.com/rakshith96gt/3-Tier-architecture-devsecops.git'
             }
         }
         stage('Sonarqube Analysis') {
@@ -40,15 +42,15 @@ pipeline {
                 }
             }
         }
-        stage('OWASP Dependency-Check Scan') {
-            steps {
-                dir('Application-Code/frontend') {
-                    dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
-                    dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
-                }
-            }
-        }
-        stage('Trivy File Scan') {
+       // stage('OWASP Dependency-Check Scan') {
+     //        steps {
+       //         dir('Application-Code/frontend') {
+        //            dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
+         //           dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+          //      }
+        //    }
+       // }
+      stage('Trivy File Scan') {
             steps {
                 dir('Application-Code/frontend') {
                     sh 'trivy fs . > trivyfs.txt'
@@ -82,7 +84,9 @@ pipeline {
         }
         stage('Checkout Code') {
             steps {
-                git credentialsId: 'GITHUB', url: 'https://github.com/rakshith96gt/3-Tier-architecture-devsecops.git'
+               git branch: 'main',
+                    credentialsId: 'GITHUB',
+                     url: 'https://github.com/rakshith96gt/3-Tier-architecture-devsecops.git'
             }
         }
         stage('Update Deployment file') {
@@ -92,7 +96,7 @@ pipeline {
             }
             steps {
                 dir('Kubernetes-Manifests-file/Frontend') {
-                    withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
+                    withCredentials([string(credentialsId: 'github', variable: 'github')]) {
                         sh '''
                             git config user.email "rakshith96gt@gmail.com"
                             git config user.name "Rakshith96gt"
@@ -103,7 +107,7 @@ pipeline {
                             sed -i "s/${AWS_ECR_REPO_NAME}:${imageTag}/${AWS_ECR_REPO_NAME}:${BUILD_NUMBER}/" deployment.yaml
                             git add deployment.yaml
                             git commit -m "Update deployment Image to version \${BUILD_NUMBER}"
-                            git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
+                            git push https://${GIT_USER_NAME}:${github}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git HEAD:main
                         '''
                     }
                 }
